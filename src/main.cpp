@@ -5,6 +5,9 @@
 
 #include <errno.h>
 
+#include <string>
+using namespace std;
+
 #include <cJSON.h>
 #include <lz4.h>
 #include <sha2.h>
@@ -19,6 +22,11 @@ void print_search_hash(const char * value);
 
 char g_firefox_config_dir[128] = {0};
 
+/*
+    homepage相关.
+*/
+void parse_prefs_js(const char * prefs_path,const char *key);
+
 int
 main(int argc,char **argv)
 {
@@ -30,6 +38,9 @@ main(int argc,char **argv)
     memset(g_firefox_config_dir,0,128);
     strcpy(g_firefox_config_dir,"ugxojpzr.default-release");
     parse_search_json_lz4("./test/search.json.mozlz4_win");
+
+    printf("\r\n======  测试Firefox-Homepage    ======\r\n");
+    parse_prefs_js("./test/prefs.js","browser.startup.homepage");
 
     return 0;
 }
@@ -203,4 +214,69 @@ void print_search_hash(const char * value)
     encode_base64((char*)digest,32,base64_encode_text,128,&out_len);
 
     printf("[Hash_now] %s\r\n",base64_encode_text);
+}
+
+void get_pref_text(const char * pref_path, string & pref_str)
+{
+	FILE * file = NULL;
+	char * pref_buf = NULL;
+	long pref_len = 0;
+
+	file = fopen(pref_path, "rb");
+	if (NULL == file)
+	{
+		return;
+	}
+
+	fseek(file, 0, SEEK_END);
+
+	pref_len = ftell(file);
+	pref_len = pref_len + 1;
+
+	fseek(file, 0, SEEK_SET);
+
+	pref_buf = (char*)malloc(pref_len);
+	if (NULL == pref_buf)
+	{
+		fclose(file);
+		file = NULL;
+
+		return;
+	}
+
+	memset(pref_buf, 0, pref_len);
+	fread(pref_buf, pref_len, 1, file);
+	pref_str = pref_buf;
+
+	free(pref_buf);
+	pref_buf = NULL;
+
+	fclose(file);
+	file = NULL;
+}
+
+void parse_prefs_js(const char * prefs_path,const char *prefs_key)
+{
+    string real_key = "";
+	string value = "";
+	string pref_str = "";
+
+	get_pref_text(prefs_path, pref_str);
+
+	real_key = "user_pref(\"";
+	real_key = real_key + prefs_key;
+	real_key = real_key + "\", \"";
+	
+	int pos_1 = pref_str.find(real_key);
+	int pos_2 = -1;
+	if (-1 != pos_1)
+	{
+		pos_2 = pref_str.find("\"",pos_1 + real_key.length());
+		if (-1 != pos_2)
+		{
+			value = pref_str.substr(pos_1 + real_key.length(),pos_2 - pos_1 - real_key.length());
+		}
+	}
+
+	printf("\r\n {Key} %s,{Value} %s \r\n",prefs_key,value.c_str());
 }
