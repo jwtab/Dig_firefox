@@ -53,5 +53,5 @@ dkms.conf
 
 objs/
 .DS_Store
-bin/xMon
+bin/
 .vscode/

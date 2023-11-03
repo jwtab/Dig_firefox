@@ -17,15 +17,20 @@ void parse_search_json_lz4(const char * json_lz4_path);
 void print_search_json(cJSON * root);
 void print_search_hash(const char * value);
 
-char g_firefox_config_dir[2048] = {0};
+char g_firefox_config_dir[128] = {0};
 
 int
 main(int argc,char **argv)
 {
-    parse_search_json_lz4("./test/search.json.mozlz4_macos");
+    printf("======  测试Firefox-Search_MacOS版本   ======\r\n");
     strcpy(g_firefox_config_dir,"ssfvl7o4.default-release");
-    //strcpy(g_firefox_config_dir,"/Users/joyce/Library/Application Support/Firefox/Profiles/ssfvl7o4.default-release");
+    parse_search_json_lz4("./test/search.json.mozlz4_macos");
     
+    printf("\r\n======  测试Firefox-Search_Windows版本    ======\r\n");
+    memset(g_firefox_config_dir,0,128);
+    strcpy(g_firefox_config_dir,"ugxojpzr.default-release");
+    parse_search_json_lz4("./test/search.json.mozlz4_win");
+
     return 0;
 }
 
@@ -189,6 +194,7 @@ void print_search_hash(const char * value)
     free(all_);
     all_ = NULL;
 
+    //Base64编码.
     char base64_encode_text[128] = {0};
     size_t out_len = 0;
 
