@@ -153,10 +153,12 @@ void print_search_json(cJSON * root)
     {
         cJSON * defaultEngineId_json = cJSON_GetObjectItem(metaData,"defaultEngineId");
         cJSON * defaultEngineIdHash_json = cJSON_GetObjectItem(metaData,"defaultEngineIdHash");
-
-        printf("\r\nEngine default id %s,IdHash %s\r\n",
+        cJSON * appDefaultEngine_json = cJSON_GetObjectItem(metaData,"appDefaultEngine");
+        
+        printf("\r\nEngine default id %s,IdHash %s,name %s\r\n",
             defaultEngineId_json->valuestring,
-            defaultEngineIdHash_json->valuestring);
+            defaultEngineIdHash_json->valuestring,
+            appDefaultEngine_json?appDefaultEngine_json->valuestring:"{NULL}");
         
         print_search_hash(defaultEngineId_json->valuestring);
     }
