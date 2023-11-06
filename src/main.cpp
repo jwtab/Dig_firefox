@@ -32,6 +32,50 @@ void parse_prefs_js(const char * prefs_path,const char *key);
 /*
     历史记录相关.
 */
+
+//参考源代码 source/toolkit/components/places/nsINavHistoryService.idl.
+enum history_visit_type {
+    
+    //The user followed a link and got a new toplevel window.
+    TRANSITION_LINK = 1,
+
+    /*
+        The user typed the page's URL in the URL bar or 
+        selected it from URL bar autocomplete results, 
+        clicked on it from a history query 
+        (from the History sidebar, History menu, or history query in the personal toolbar or Places organizer.
+    */
+    TRANSITION_TYPED,
+
+    //The user followed a bookmark to get to the page.
+    TRANSITION_BOOKMARK,
+
+    /* 
+        Set when some inner content is loaded. T
+        his is true of all images on a page, and the contents of the iframe. 
+        It is also true of any content in a frame, 
+        regardless of whether or not the user clicked something to get there.
+    */
+    TRANSITION_EMBED,
+
+    //The transition was a permanent redirect.
+    TRANSITION_REDIRECT_PERMANENT,
+
+    //The transition was a temporary redirect.
+    TRANSITION_REDIRECT_TEMPORARY,
+
+    //The transition is a download.
+    TRANSITION_DOWNLOAD,
+
+    //The user followed a link and got a visit in a frame.
+    TRANSITION_FRAMED_LINK,
+
+    //The page has been reloaded.
+    TRANSITION_RELOAD,
+
+    TRANSITION_Max
+};
+
 void parse_history_firefox(const char * places_path);
 
 int
@@ -301,7 +345,8 @@ void parse_history_firefox(const char * places_path)
                             b.url, \
                             b.title, \
                             strftime('%Y-%m-%d %H:%M:%S', a.visit_date/1000000.0, 'unixepoch', 'localtime') as v_date, \
-                            a.visit_type \
+                            a.visit_type, \
+                            b.visit_count \
                             from moz_historyvisits a,moz_places b \
                             where a.place_id = b.id \
                             and b.title like '%'\
