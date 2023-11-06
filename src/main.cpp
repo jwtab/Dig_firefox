@@ -13,6 +13,8 @@ using namespace std;
 #include <sha2.h>
 #include <Base64.h>
 
+#include <sqlite3.h>
+
 /*
     Search相关.
 */
@@ -26,6 +28,11 @@ char g_firefox_config_dir[128] = {0};
     homepage相关.
 */
 void parse_prefs_js(const char * prefs_path,const char *key);
+
+/*
+    历史记录相关.
+*/
+void parse_history_firefox(const char * places_path);
 
 int
 main(int argc,char **argv)
@@ -41,6 +48,9 @@ main(int argc,char **argv)
 
     printf("\r\n======  测试Firefox-Homepage    ======\r\n");
     parse_prefs_js("./test/prefs.js","browser.startup.homepage");
+
+    printf("\r\n======  测试Firefox-History    ======\r\n");
+    parse_history_firefox("./test/places.sqlite");
 
     return 0;
 }
@@ -279,4 +289,57 @@ void parse_prefs_js(const char * prefs_path,const char *prefs_key)
 	}
 
 	printf("\r\n {Key} %s,{Value} %s \r\n",prefs_key,value.c_str());
+}
+
+void parse_history_firefox(const char * places_path)
+{
+    printf("\r\n[[Sqlite3_Version : %s]]\r\n",sqlite3_libversion());
+
+    sqlite3 * db = NULL;
+    char * err_msg = NULL;
+    char * sql_history = "select a.id, \
+                            b.url, \
+                            b.title, \
+                            strftime('%Y-%m-%d %H:%M:%S', a.visit_date/1000000.0, 'unixepoch', 'localtime') as v_date, \
+                            a.visit_type \
+                            from moz_historyvisits a,moz_places b \
+                            where a.place_id = b.id \
+                            and b.title like '%'\
+                            order by v_date desc";
+
+    int ret_code = sqlite3_open(places_path,&db);
+    if(SQLITE_OK != ret_code)
+    {
+        printf("sqlite3_open(%s) error %s\r\n",places_path,sqlite3_errmsg(db));
+        sqlite3_close(db);
+
+        return;
+    }
+
+    char **result;
+    int nrows, ncolumns, i, j, index;
+
+    ret_code = sqlite3_get_table(db, sql_history, &result, &nrows, &ncolumns, &err_msg);
+    if(SQLITE_OK != ret_code)
+    {
+        printf("sqlite3_get_table() error : %s\r\n",err_msg);
+        sqlite3_free(err_msg);
+    }
+ 
+    index = ncolumns;
+    for (i = 0; i < nrows; i++)
+    {
+        for (j = 0; j < ncolumns; j++)
+        {
+            printf("%-8s : %-8s\n", result[j], result[index]);   
+            index++;
+        }
+
+        printf("************************\n");
+    }
+
+    sqlite3_free_table(result);
+
+    sqlite3_close(db);
+    db = NULL;
 }

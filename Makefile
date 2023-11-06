@@ -5,8 +5,8 @@ GXX := c++
 
 TARGET := ./bin/dig
 
-INC := -I ./inc
-LIBS := 
+INC := -I ./inc /usr/local/Cellar/sqlite/3.41.1/include
+LIBS := -L/usr/local/Cellar/sqlite/3.41.1/lib  -lsqlite3
 
 CPPFLAGS := -Wall -std=c++11
 
