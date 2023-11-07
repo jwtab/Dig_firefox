@@ -5,8 +5,8 @@ GXX := c++
 
 TARGET := ./bin/dig
 
-INC := -I ./inc /usr/local/Cellar/sqlite/3.41.1/include
-LIBS := -L/usr/local/Cellar/sqlite/3.41.1/lib  -lsqlite3
+INC := -I ./inc 
+LIBS := -L./bin  -lsqlite3
 
 CPPFLAGS := -Wall -std=c++11
 
@@ -32,3 +32,6 @@ ${OBJ_DIR}/%.o:${SRC_DIR}/%.cpp
 clean:
 	rm -rf ${OBJ_DIR}
 	rm -rf ${TARGET}
+
+sqlite3:
+	gcc src/sqlite3.c -lpthread -ldl -fPIC -shared -o ./bin/libsqlite3.so 
